@@ -77,16 +77,13 @@ body:after{
 }
 
 #activate button{
- position:relative;
- z-index:10000;
- pointer-events:auto;
- touch-action:manipulation;
  background:#180000;
  border:2px solid red;
  color:red;
  padding:18px 30px;
  font-family:monospace;
  font-size:18px;
+ touch-action:manipulation;
 }
 
 #activate button:active{
@@ -113,7 +110,6 @@ body:after{
  width:100%;
  background:red;
  box-shadow:0 0 20px red;
- transition:width .2s linear;
 }
 
 .panel{
@@ -177,7 +173,7 @@ body:after{
 .enter{background:#300000}
 
 #error{
- height:18px;
+ height:20px;
  color:#ff3030;
  font-weight:bold;
  font-size:13px;
@@ -194,14 +190,15 @@ body:after{
  font-weight:bold;
 }
 
-#access{
- font-size:clamp(42px,12vw,75px);
- animation:access .8s ease-out;
-}
-
 #boom{
  font-size:clamp(70px,20vw,130px);
- animation:shake .08s infinite;
+ animation:shake .045s infinite;
+}
+
+#offline{
+ color:#777;
+ font-size:22px;
+ margin-top:20px;
 }
 
 #flash{
@@ -213,6 +210,15 @@ body:after{
  z-index:80;
 }
 
+#redFlash{
+ position:fixed;
+ inset:0;
+ background:red;
+ opacity:0;
+ pointer-events:none;
+ z-index:70;
+}
+
 #greenFlash{
  position:fixed;
  inset:0;
@@ -222,233 +228,184 @@ body:after{
  z-index:70;
 }
 
-#scan{
- position:fixed;
- left:0;
- top:-20%;
- width:100%;
- height:20%;
- background:linear-gradient(
-  transparent,
-  rgba(0,255,80,.9),
-  transparent
- );
- opacity:0;
- pointer-events:none;
- z-index:60;
-}
-
 @keyframes blink{
  0%,45%{opacity:1}
  46%,100%{opacity:.2}
 }
 
 @keyframes shake{
- 0%{transform:translate(3px,2px)}
- 50%{transform:translate(-3px,-2px)}
- 100%{transform:translate(2px,3px)}
-}
-
-@keyframes scan{
- 0%{top:-20%;opacity:0}
- 20%{opacity:1}
- 100%{top:120%;opacity:0}
-}
-
-@keyframes access{
- 0%{
-  transform:scale(.2);
-  opacity:0;
- }
- 60%{
-  transform:scale(1.2);
-  opacity:1;
- }
- 100%{
-  transform:scale(1);
- }
+ 0%{transform:translate(9px,5px)}
+ 50%{transform:translate(-9px,-6px)}
+ 100%{transform:translate(7px,8px)}
 }
 </style>
 </head>
 
 <body>
 
+
 <div id="activate">
 
- <h1>⚠ BLACKOUT PROTOCOL ⚠</h1>
+<h1>⚠ BLACKOUT PROTOCOL ⚠</h1>
 
- <p class="small">
- AUDIO SYSTEM STANDBY
- </p>
+<p class="small">AUDIO SYSTEM STANDBY</p>
+<p class="small">SELF-DESTRUCT CONTROL TERMINAL</p>
 
- <p class="small">
- SELF-DESTRUCT CONTROL TERMINAL
- </p>
-
- <button id="activateButton" type="button">
- ▶ ACTIVATE SYSTEM
- </button>
+<button id="activateButton">
+▶ ACTIVATE SYSTEM
+</button>
 
 </div>
 
 
 <div class="screen" id="main">
 
- <div class="warning">
-  ⚠ SELF-DESTRUCT SYSTEM ⚠
- </div>
+<div class="warning">
+⚠ SELF-DESTRUCT SYSTEM ⚠
+</div>
 
- <div class="small">
-  UNAUTHORIZED ACCESS DETECTED
- </div>
+<div class="small">
+UNAUTHORIZED ACCESS DETECTED
+</div>
 
- <div id="timer">30.0</div>
+<div id="timer">30.0</div>
 
- <div class="bar">
-  <div id="bar"></div>
- </div>
+<div class="bar">
+<div id="bar"></div>
+</div>
 
- <div class="small" id="status">
-  SYSTEM INTEGRITY: 100%
- </div>
+<div class="small" id="status">
+SYSTEM INTEGRITY: 100%
+</div>
 
- <div class="panel">
 
-  <div class="stats">
+<div class="panel">
 
-   <div class="stat">
-    CORE TEMP
-    <b id="temp">742°C</b>
-   </div>
+<div class="stats">
 
-   <div class="stat">
-    POWER
-    <b id="power">98%</b>
-   </div>
+<div class="stat">
+CORE TEMP
+<b id="temp">742°C</b>
+</div>
 
-   <div class="stat">
-    LOCK
-    <b>ACTIVE</b>
-   </div>
+<div class="stat">
+POWER
+<b id="power">98%</b>
+</div>
 
-  </div>
+<div class="stat">
+LOCK
+<b>ACTIVE</b>
+</div>
 
- </div>
+</div>
 
- <div class="panel">
+</div>
 
-  <div class="small">
-   🔐 ENTER DEACTIVATION CODE
-  </div>
 
-  <div class="code-display" id="display">
-   ----
-  </div>
+<div class="panel">
 
-  <div class="keypad">
+<div class="small">
+🔐 ENTER DEACTIVATION CODE
+</div>
 
-   <button class="key" onclick="press(1)">1</button>
-   <button class="key" onclick="press(2)">2</button>
-   <button class="key" onclick="press(3)">3</button>
+<div class="code-display" id="display">
+----
+</div>
 
-   <button class="key" onclick="press(4)">4</button>
-   <button class="key" onclick="press(5)">5</button>
-   <button class="key" onclick="press(6)">6</button>
 
-   <button class="key" onclick="press(7)">7</button>
-   <button class="key" onclick="press(8)">8</button>
-   <button class="key" onclick="press(9)">9</button>
+<div class="keypad">
 
-   <button class="key clear" onclick="clearCode()">C</button>
-   <button class="key" onclick="press(0)">0</button>
-   <button class="key enter" onclick="checkCode()">✓</button>
+<button class="key" onclick="press(1)">1</button>
+<button class="key" onclick="press(2)">2</button>
+<button class="key" onclick="press(3)">3</button>
 
-  </div>
+<button class="key" onclick="press(4)">4</button>
+<button class="key" onclick="press(5)">5</button>
+<button class="key" onclick="press(6)">6</button>
 
-  <div id="error"></div>
+<button class="key" onclick="press(7)">7</button>
+<button class="key" onclick="press(8)">8</button>
+<button class="key" onclick="press(9)">9</button>
 
- </div>
+<button class="key clear" onclick="clearCode()">C</button>
+<button class="key" onclick="press(0)">0</button>
+<button class="key enter" onclick="checkCode()">✓</button>
 
- <div class="small">
-  SECURITY LEVEL: CRITICAL
- </div>
+</div>
+
+<div id="error"></div>
+
+</div>
+
+<div class="small">
+SECURITY LEVEL: CRITICAL
+</div>
 
 </div>
 
 
 <div class="screen" id="disarmed">
 
- <div id="access" class="success">
-  ✓ ACCESS GRANTED
- </div>
+<div class="success">
+✓ ACCESS GRANTED
+</div>
 
- <div class="panel">
+<div class="panel">
 
-  <div style="color:#00ff55;font-size:22px">
-   DEACTIVATION SUCCESSFUL
-  </div>
+<div style="color:#00ff55;font-size:22px">
+DEACTIVATION SUCCESSFUL
+</div>
 
-  <p id="victoryText">
-   SELF-DESTRUCT CANCELLED
-  </p>
+<p>SELF-DESTRUCT CANCELLED</p>
+<p>CORE STABILIZED</p>
+<p>ALL SYSTEMS ONLINE</p>
 
-  <p>
-   CORE STABILIZED
-  </p>
-
-  <p>
-   ALL SYSTEMS ONLINE
-  </p>
-
- </div>
-
- <div class="small" style="color:#00ff55">
-  ████████████████████
- </div>
-
- <div class="small" style="color:#00ff55">
-  SECURITY BREACH CONTAINED
- </div>
+</div>
 
 </div>
 
 
 <div class="screen" id="destroyed">
 
- <div class="warning">
-  ⚠ CRITICAL FAILURE ⚠
- </div>
+<div class="warning">
+⚠ CRITICAL FAILURE ⚠
+</div>
 
- <div id="boom">💥</div>
+<div id="boom">💥</div>
 
- <div class="warning">
-  SYSTEM DESTROYED
- </div>
+<div class="warning">
+SYSTEM DESTROYED
+</div>
 
- <div class="small">
-  SELF-DESTRUCT SEQUENCE COMPLETE
- </div>
+<div class="small">
+SELF-DESTRUCT SEQUENCE COMPLETE
+</div>
+
+<div id="offline">
+▓▓ SYSTEM OFFLINE ▓▓
+</div>
 
 </div>
 
 
 <div id="flash"></div>
+<div id="redFlash"></div>
 <div id="greenFlash"></div>
-<div id="scan"></div>
 
 
 <script>
 
-let time=30.0;
+let time=30;
 let active=false;
 let code="";
+let audioContext=null;
+let alarmTimer=null;
 
 const correctCode="7391";
 
-let audioContext=null;
-let alarmOsc=null;
-let alarmGain=null;
 
+/* AKTIVACE */
 
 document
 .getElementById("activateButton")
@@ -461,18 +418,9 @@ function activateSystem(){
 
  active=true;
 
- startAudio();
-
- update();
-
-}
-
-
-function startAudio(){
-
  const AudioCtx=
-  window.AudioContext ||
-  window.webkitAudioContext;
+ window.AudioContext ||
+ window.webkitAudioContext;
 
  audioContext=new AudioCtx();
 
@@ -480,66 +428,65 @@ function startAudio(){
   audioContext.resume();
  }
 
- alarmOsc=
-  audioContext.createOscillator();
-
- alarmGain=
-  audioContext.createGain();
-
- alarmOsc.type="sawtooth";
- alarmOsc.frequency.value=110;
-
- alarmGain.gain.value=.025;
-
- alarmOsc.connect(alarmGain);
- alarmGain.connect(audioContext.destination);
-
- alarmOsc.start();
-
  beep();
-
+ update();
 }
 
+
+/* ODPOČET + ALARM */
 
 function beep(){
 
  if(!active)return;
 
- let osc=
-  audioContext.createOscillator();
+ const osc=
+ audioContext.createOscillator();
 
- let gain=
-  audioContext.createGain();
+ const gain=
+ audioContext.createGain();
 
  osc.type="square";
 
- osc.frequency.value=
-  time<=10 ? 900 : 600;
+ if(time<=3){
+  osc.frequency.value=1700;
+ }
+ else if(time<=10){
+  osc.frequency.value=1050;
+ }
+ else{
+  osc.frequency.value=620;
+ }
 
  gain.gain.setValueAtTime(
-  .06,
+  .13,
   audioContext.currentTime
  );
 
  gain.gain.exponentialRampToValueAtTime(
   .001,
-  audioContext.currentTime+.12
+  audioContext.currentTime+.06
  );
 
  osc.connect(gain);
  gain.connect(audioContext.destination);
 
  osc.start();
+ osc.stop(audioContext.currentTime+.06);
 
- osc.stop(
-  audioContext.currentTime+.12
- );
 
- let delay=
-  time<=10 ? 400 : 1000;
+ let delay;
 
- setTimeout(beep,delay);
+ if(time<=3){
+  delay=105;
+ }
+ else if(time<=10){
+  delay=300;
+ }
+ else{
+  delay=1000;
+ }
 
+ alarmTimer=setTimeout(beep,delay);
 }
 
 
@@ -549,64 +496,55 @@ function update(){
 
  time-=.1;
 
- if(time<0)time=0;
-
- document.getElementById("timer").innerText=
-  time.toFixed(1);
-
- document.getElementById("bar").style.width=
-  ((time/30)*100)+"%";
-
- document.getElementById("status").innerText=
-  "SYSTEM INTEGRITY: "+
-  Math.round((time/30)*100)+"%";
-
- document.getElementById("temp").innerText=
-  Math.round(742+(30-time)*35)+"°C";
-
- document.getElementById("power").innerText=
-  Math.max(0,Math.round(time/30*98))+"%";
-
  if(time<=0){
+  time=0;
   destroy();
   return;
  }
 
- setTimeout(update,100);
+ document.getElementById("timer").innerText=
+ time.toFixed(1);
 
+ document.getElementById("bar").style.width=
+ ((time/30)*100)+"%";
+
+ document.getElementById("status").innerText=
+ "SYSTEM INTEGRITY: "+
+ Math.round((time/30)*100)+"%";
+
+ document.getElementById("temp").innerText=
+ Math.round(742+(30-time)*35)+"°C";
+
+ document.getElementById("power").innerText=
+ Math.max(0,Math.round(time/30*98))+"%";
+
+ setTimeout(update,100);
 }
 
 
-function press(number){
+/* KLÁVESNICE */
+
+function press(n){
 
  if(!active)return;
 
  if(code.length>=4)return;
 
- code+=String(number);
+ code+=n;
 
  updateDisplay();
-
 }
 
 
 function updateDisplay(){
 
- let display="";
+ let x="";
 
  for(let i=0;i<4;i++){
-
-  if(i<code.length){
-   display+="●";
-  }else{
-   display+="-";
-  }
-
+  x+=i<code.length?"●":"-";
  }
 
- document.getElementById("display").innerText=
-  display;
-
+ document.getElementById("display").innerText=x;
 }
 
 
@@ -617,9 +555,10 @@ function clearCode(){
  document.getElementById("error").innerText="";
 
  updateDisplay();
-
 }
 
+
+/* ŠPATNÝ KÓD */
 
 function checkCode(){
 
@@ -632,138 +571,76 @@ function checkCode(){
  }else{
 
   document.getElementById("error").innerText=
-   "❌ INVALID CODE";
+  "❌ ACCESS DENIED — INVALID CODE";
+
+  wrongCodeSound();
 
   code="";
 
   updateDisplay();
 
   time=Math.max(0,time-3);
-
-  shortBeep();
-
  }
-
 }
 
 
-function shortBeep(){
+/* ❌ ERROR SOUND */
+
+function wrongCodeSound(){
 
  if(!audioContext)return;
 
- let osc=
-  audioContext.createOscillator();
 
- let gain=
-  audioContext.createGain();
+ /* ČERVENÝ FLASH */
 
- osc.frequency.value=180;
+ const red=
+ document.getElementById("redFlash");
 
- gain.gain.value=.15;
+ red.style.opacity=".55";
 
- osc.connect(gain);
- gain.connect(audioContext.destination);
-
- osc.start();
-
- osc.stop(
-  audioContext.currentTime+.25
- );
-
-}
+ setTimeout(()=>{
+  red.style.opacity="0";
+ },120);
 
 
-/* VÍTĚZNÝ KONEC */
-
-function disarm(){
-
- active=false;
-
- if(alarmOsc){
-
-  try{
-   alarmOsc.stop();
-  }catch(e){}
-
- }
-
- document.getElementById("main").style.display="none";
- document.getElementById("disarmed").style.display="block";
-
-
- let green=
-  document.getElementById("greenFlash");
-
- green.style.opacity=".75";
-
- setTimeout(function(){
-  green.style.opacity="0";
- },300);
-
-
- let scan=
-  document.getElementById("scan");
-
- scan.style.animation=
-  "scan 1.5s linear";
-
+ /* VIBRACE */
 
  if(navigator.vibrate){
-
   navigator.vibrate([
-   100,50,100,50,300,80,500
+   120,60,
+   120,60,
+   250
   ]);
-
  }
 
 
- victoryMusic();
+ /*
+  TŘI HLASITÉ ERROR RÁNY
+ */
 
-}
+ [0,180,360].forEach((delay,index)=>{
 
+  setTimeout(()=>{
 
-/* VLASTNÍ METALOVÝ VÍTĚZNÝ RIFF */
+   const osc=
+   audioContext.createOscillator();
 
-function victoryMusic(){
+   const gain=
+   audioContext.createGain();
 
- if(!audioContext)return;
+   osc.type="square";
 
- const riff=[
-  {f:82.41,t:0,d:.28},
-  {f:123.47,t:.28,d:.28},
-  {f:164.81,t:.56,d:.28},
-  {f:123.47,t:.84,d:.28},
-  {f:196.00,t:1.12,d:.35},
-  {f:246.94,t:1.47,d:.8}
- ];
-
- riff.forEach(function(note){
-
-  setTimeout(function(){
-
-   let osc=
-    audioContext.createOscillator();
-
-   let gain=
-    audioContext.createGain();
-
-   osc.type="sawtooth";
-
-   osc.frequency.value=note.f;
+   osc.frequency.value=
+   index===2 ? 180 : 260;
 
    gain.gain.setValueAtTime(
-    .001,
+    .22,
     audioContext.currentTime
    );
 
    gain.gain.exponentialRampToValueAtTime(
-    .18,
-    audioContext.currentTime+.025
-   );
-
-   gain.gain.exponentialRampToValueAtTime(
     .001,
-    audioContext.currentTime+note.d
+    audioContext.currentTime+.25
    );
 
    osc.connect(gain);
@@ -772,41 +649,44 @@ function victoryMusic(){
    osc.start();
 
    osc.stop(
-    audioContext.currentTime+note.d
+    audioContext.currentTime+.25
    );
 
-  },note.t*1000);
+  },delay);
 
  });
 
 
- /* DRUHÁ VRSTVA - HARMONIE */
+ /* HLUBOKÝ ERROR */
 
- setTimeout(function(){
+ setTimeout(()=>{
 
-  let osc=
-   audioContext.createOscillator();
+  const osc=
+  audioContext.createOscillator();
 
-  let gain=
-   audioContext.createGain();
+  const gain=
+  audioContext.createGain();
 
-  osc.type="square";
+  osc.type="sawtooth";
 
-  osc.frequency.value=246.94;
+  osc.frequency.setValueAtTime(
+   90,
+   audioContext.currentTime
+  );
+
+  osc.frequency.exponentialRampToValueAtTime(
+   35,
+   audioContext.currentTime+.5
+  );
 
   gain.gain.setValueAtTime(
-   .001,
+   .25,
    audioContext.currentTime
   );
 
   gain.gain.exponentialRampToValueAtTime(
-   .08,
-   audioContext.currentTime+.05
-  );
-
-  gain.gain.exponentialRampToValueAtTime(
    .001,
-   audioContext.currentTime+1
+   audioContext.currentTime+.5
   );
 
   osc.connect(gain);
@@ -815,93 +695,340 @@ function victoryMusic(){
   osc.start();
 
   osc.stop(
-   audioContext.currentTime+1
+   audioContext.currentTime+.5
   );
 
- },1120);
-
+ },500);
 }
 
 
-/* VÝBUCH */
+/* ZNEŠKODNĚNO */
+
+function disarm(){
+
+ active=false;
+
+ clearTimeout(alarmTimer);
+
+ document.getElementById("main").style.display="none";
+
+ document.getElementById("disarmed").style.display="block";
+
+ document.getElementById("greenFlash").style.opacity=".7";
+
+ setTimeout(()=>{
+  document.getElementById("greenFlash").style.opacity="0";
+ },300);
+
+ if(navigator.vibrate){
+  navigator.vibrate([
+   100,50,100,50,300,80,500
+  ]);
+ }
+
+ victorySound();
+}
+
+
+function victorySound(){
+
+ if(!audioContext)return;
+
+ const notes=[
+  [82,0],
+  [123,.25],
+  [165,.5],
+  [123,.75],
+  [196,1],
+  [247,1.3]
+ ];
+
+ notes.forEach(n=>{
+
+  setTimeout(()=>{
+
+   const osc=
+   audioContext.createOscillator();
+
+   const gain=
+   audioContext.createGain();
+
+   osc.type="sawtooth";
+   osc.frequency.value=n[0];
+
+   gain.gain.setValueAtTime(
+    .001,
+    audioContext.currentTime
+   );
+
+   gain.gain.exponentialRampToValueAtTime(
+    .18,
+    audioContext.currentTime+.03
+   );
+
+   gain.gain.exponentialRampToValueAtTime(
+    .001,
+    audioContext.currentTime+.4
+   );
+
+   osc.connect(gain);
+   gain.connect(audioContext.destination);
+
+   osc.start();
+
+   osc.stop(
+    audioContext.currentTime+.4
+   );
+
+  },n[1]*1000);
+ });
+}
+
+
+/* 💥 VÝBUCH */
 
 function destroy(){
 
  active=false;
 
- if(alarmOsc){
-
-  try{
-   alarmOsc.stop();
-  }catch(e){}
-
- }
+ clearTimeout(alarmTimer);
 
  document.getElementById("main").style.display="none";
+
  document.getElementById("destroyed").style.display="block";
 
- let flash=
-  document.getElementById("flash");
-
- flash.style.opacity="1";
-
- setTimeout(function(){
-  flash.style.opacity="0";
- },180);
-
  if(navigator.vibrate){
-
   navigator.vibrate([
-   300,100,300,100,800
+   1000,80,
+   700,100,
+   1400
   ]);
-
  }
 
- explosionSound();
-
+ explosion();
 }
 
 
-function explosionSound(){
+/* GENERÁTOR ŠUMU */
 
- if(!audioContext)return;
+function noiseBuffer(duration){
 
- let osc=
-  audioContext.createOscillator();
+ const sampleRate=
+ audioContext.sampleRate;
 
- let gain=
-  audioContext.createGain();
-
- osc.type="sawtooth";
-
- osc.frequency.setValueAtTime(
-  100,
-  audioContext.currentTime
+ const buffer=
+ audioContext.createBuffer(
+  1,
+  sampleRate*duration,
+  sampleRate
  );
 
- osc.frequency.exponentialRampToValueAtTime(
-  30,
-  audioContext.currentTime+1
+ const data=
+ buffer.getChannelData(0);
+
+ for(let i=0;i<data.length;i++){
+  data[i]=Math.random()*2-1;
+ }
+
+ return buffer;
+}
+
+
+/* 💥 MASIVNÍ FILMOVÝ VÝBUCH */
+
+function explosion(){
+
+ const now=
+ audioContext.currentTime;
+
+
+ /* BÍLÝ BLESK */
+
+ const flash=
+ document.getElementById("flash");
+
+ flash.style.opacity="1";
+
+ setTimeout(()=>{
+  flash.style.opacity="0";
+ },450);
+
+
+ /*
+  OBROVSKÁ TLAKOVÁ RÁNA
+ */
+
+ const noise=
+ audioContext.createBufferSource();
+
+ noise.buffer=
+ noiseBuffer(1.5);
+
+ const filter=
+ audioContext.createBiquadFilter();
+
+ filter.type="lowpass";
+
+ filter.frequency.setValueAtTime(
+  700,
+  now
  );
+
+ filter.frequency.exponentialRampToValueAtTime(
+  35,
+  now+1.5
+ );
+
+ const gain=
+ audioContext.createGain();
 
  gain.gain.setValueAtTime(
-  .3,
-  audioContext.currentTime
+  1.2,
+  now
  );
 
  gain.gain.exponentialRampToValueAtTime(
   .001,
-  audioContext.currentTime+1
+  now+1.5
  );
 
- osc.connect(gain);
+ noise.connect(filter);
+ filter.connect(gain);
  gain.connect(audioContext.destination);
 
- osc.start();
+ noise.start(now);
 
- osc.stop(
-  audioContext.currentTime+1
+
+ /*
+  EXTRA HLUBOKÉ DUNĚNÍ
+ */
+
+ const rumble=
+ audioContext.createOscillator();
+
+ const rumbleGain=
+ audioContext.createGain();
+
+ rumble.type="sine";
+
+ rumble.frequency.setValueAtTime(
+  38,
+  now
  );
+
+ rumble.frequency.exponentialRampToValueAtTime(
+  8,
+  now+6
+ );
+
+ rumbleGain.gain.setValueAtTime(
+  1.15,
+  now
+ );
+
+ rumbleGain.gain.exponentialRampToValueAtTime(
+  .001,
+  now+6
+ );
+
+ rumble.connect(rumbleGain);
+ rumbleGain.connect(audioContext.destination);
+
+ rumble.start(now);
+ rumble.stop(now+6);
+
+
+ /*
+  DRUHÁ OBROVSKÁ VLNA
+ */
+
+ setTimeout(()=>{
+
+  const wave=
+  audioContext.createBufferSource();
+
+  wave.buffer=
+  noiseBuffer(3);
+
+  const waveFilter=
+  audioContext.createBiquadFilter();
+
+  waveFilter.type="lowpass";
+  waveFilter.frequency.value=230;
+
+  const waveGain=
+  audioContext.createGain();
+
+  waveGain.gain.setValueAtTime(
+   .7,
+   audioContext.currentTime
+  );
+
+  waveGain.gain.exponentialRampToValueAtTime(
+   .001,
+   audioContext.currentTime+3
+  );
+
+  wave.connect(waveFilter);
+  waveFilter.connect(waveGain);
+  waveGain.connect(audioContext.destination);
+
+  wave.start();
+
+ },350);
+
+
+ /*
+  DRUHÝ BLESK
+ */
+
+ setTimeout(()=>{
+
+  flash.style.opacity=".85";
+
+  setTimeout(()=>{
+   flash.style.opacity="0";
+  },180);
+
+ },600);
+
+
+ /*
+  DLOUHÝ DOZVUK
+ */
+
+ setTimeout(()=>{
+
+  const final=
+  audioContext.createOscillator();
+
+  const finalGain=
+  audioContext.createGain();
+
+  final.type="sine";
+
+  final.frequency.value=16;
+
+  finalGain.gain.setValueAtTime(
+   .7,
+   audioContext.currentTime
+  );
+
+  finalGain.gain.exponentialRampToValueAtTime(
+   .001,
+   audioContext.currentTime+7
+  );
+
+  final.connect(finalGain);
+  finalGain.connect(audioContext.destination);
+
+  final.start();
+
+  final.stop(
+   audioContext.currentTime+7
+  );
+
+ },700);
 
 }
 
