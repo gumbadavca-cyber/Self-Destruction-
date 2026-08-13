@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SELF-DESTRUCT</title>
+<title>BLACKOUT PROTOCOL</title>
 
 <style>
 *{box-sizing:border-box}
@@ -30,6 +30,7 @@ body:after{
  position:fixed;
  inset:0;
  pointer-events:none;
+ z-index:1;
  background:repeating-linear-gradient(
   0deg,
   rgba(255,0,0,.04) 0 2px,
@@ -41,6 +42,8 @@ body:after{
  width:100%;
  max-width:650px;
  padding:18px;
+ position:relative;
+ z-index:5;
 }
 
 .warning{
@@ -54,6 +57,41 @@ body:after{
  color:#ff6666;
  font-size:13px;
  margin:8px;
+}
+
+#activate{
+ position:fixed;
+ inset:0;
+ z-index:9999;
+ background:#020000;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ flex-direction:column;
+ padding:20px;
+}
+
+#activate h1{
+ color:red;
+ text-shadow:0 0 10px red,0 0 30px red;
+}
+
+#activate button{
+ position:relative;
+ z-index:10000;
+ pointer-events:auto;
+ touch-action:manipulation;
+ background:#180000;
+ border:2px solid red;
+ color:red;
+ padding:18px 30px;
+ font-family:monospace;
+ font-size:18px;
+}
+
+#activate button:active{
+ background:red;
+ color:black;
 }
 
 #timer{
@@ -127,6 +165,7 @@ body:after{
  font-family:monospace;
  font-size:20px;
  font-weight:bold;
+ touch-action:manipulation;
 }
 
 .key:active{
@@ -134,13 +173,8 @@ body:after{
  color:black;
 }
 
-.clear{
- background:#250000;
-}
-
-.enter{
- background:#300000;
-}
+.clear{background:#250000}
+.enter{background:#300000}
 
 #error{
  height:18px;
@@ -160,8 +194,14 @@ body:after{
  font-weight:bold;
 }
 
+#access{
+ font-size:clamp(42px,12vw,75px);
+ animation:access .8s ease-out;
+}
+
 #boom{
  font-size:clamp(70px,20vw,130px);
+ animation:shake .08s infinite;
 }
 
 #flash{
@@ -170,18 +210,87 @@ body:after{
  background:white;
  opacity:0;
  pointer-events:none;
+ z-index:80;
+}
+
+#greenFlash{
+ position:fixed;
+ inset:0;
+ background:#00ff55;
+ opacity:0;
+ pointer-events:none;
+ z-index:70;
+}
+
+#scan{
+ position:fixed;
+ left:0;
+ top:-20%;
+ width:100%;
+ height:20%;
+ background:linear-gradient(
+  transparent,
+  rgba(0,255,80,.9),
+  transparent
+ );
+ opacity:0;
+ pointer-events:none;
+ z-index:60;
 }
 
 @keyframes blink{
  0%,45%{opacity:1}
  46%,100%{opacity:.2}
 }
+
+@keyframes shake{
+ 0%{transform:translate(3px,2px)}
+ 50%{transform:translate(-3px,-2px)}
+ 100%{transform:translate(2px,3px)}
+}
+
+@keyframes scan{
+ 0%{top:-20%;opacity:0}
+ 20%{opacity:1}
+ 100%{top:120%;opacity:0}
+}
+
+@keyframes access{
+ 0%{
+  transform:scale(.2);
+  opacity:0;
+ }
+ 60%{
+  transform:scale(1.2);
+  opacity:1;
+ }
+ 100%{
+  transform:scale(1);
+ }
+}
 </style>
 </head>
 
 <body>
 
-<div id="flash"></div>
+<div id="activate">
+
+ <h1>⚠ BLACKOUT PROTOCOL ⚠</h1>
+
+ <p class="small">
+ AUDIO SYSTEM STANDBY
+ </p>
+
+ <p class="small">
+ SELF-DESTRUCT CONTROL TERMINAL
+ </p>
+
+ <button id="activateButton" type="button">
+ ▶ ACTIVATE SYSTEM
+ </button>
+
+</div>
+
 
 <div class="screen" id="main">
 
@@ -190,7 +299,7 @@ body:after{
  </div>
 
  <div class="small">
-  NUCLEAR CORE FAILURE DETECTED
+  UNAUTHORIZED ACCESS DETECTED
  </div>
 
  <div id="timer">30.0</div>
@@ -266,23 +375,43 @@ body:after{
 
 </div>
 
+
 <div class="screen" id="disarmed">
 
- <div class="success">
-  ✓ SYSTEM DISARMED
+ <div id="access" class="success">
+  ✓ ACCESS GRANTED
  </div>
 
  <div class="panel">
-  <div class="success" style="font-size:22px">
-   DEACTIVATION CODE ACCEPTED
+
+  <div style="color:#00ff55;font-size:22px">
+   DEACTIVATION SUCCESSFUL
   </div>
 
-  <p>SELF-DESTRUCT CANCELLED</p>
-  <p>CORE STABILIZED</p>
-  <p>ALL SYSTEMS ONLINE</p>
+  <p id="victoryText">
+   SELF-DESTRUCT CANCELLED
+  </p>
+
+  <p>
+   CORE STABILIZED
+  </p>
+
+  <p>
+   ALL SYSTEMS ONLINE
+  </p>
+
+ </div>
+
+ <div class="small" style="color:#00ff55">
+  ████████████████████
+ </div>
+
+ <div class="small" style="color:#00ff55">
+  SECURITY BREACH CONTAINED
  </div>
 
 </div>
+
 
 <div class="screen" id="destroyed">
 
@@ -302,19 +431,123 @@ body:after{
 
 </div>
 
+
+<div id="flash"></div>
+<div id="greenFlash"></div>
+<div id="scan"></div>
+
+
 <script>
 
 let time=30.0;
-let active=true;
+let active=false;
 let code="";
 
 const correctCode="7391";
+
+let audioContext=null;
+let alarmOsc=null;
+let alarmGain=null;
+
+
+document
+.getElementById("activateButton")
+.addEventListener("click",activateSystem);
+
+
+function activateSystem(){
+
+ document.getElementById("activate").style.display="none";
+
+ active=true;
+
+ startAudio();
+
+ update();
+
+}
+
+
+function startAudio(){
+
+ const AudioCtx=
+  window.AudioContext ||
+  window.webkitAudioContext;
+
+ audioContext=new AudioCtx();
+
+ if(audioContext.state==="suspended"){
+  audioContext.resume();
+ }
+
+ alarmOsc=
+  audioContext.createOscillator();
+
+ alarmGain=
+  audioContext.createGain();
+
+ alarmOsc.type="sawtooth";
+ alarmOsc.frequency.value=110;
+
+ alarmGain.gain.value=.025;
+
+ alarmOsc.connect(alarmGain);
+ alarmGain.connect(audioContext.destination);
+
+ alarmOsc.start();
+
+ beep();
+
+}
+
+
+function beep(){
+
+ if(!active)return;
+
+ let osc=
+  audioContext.createOscillator();
+
+ let gain=
+  audioContext.createGain();
+
+ osc.type="square";
+
+ osc.frequency.value=
+  time<=10 ? 900 : 600;
+
+ gain.gain.setValueAtTime(
+  .06,
+  audioContext.currentTime
+ );
+
+ gain.gain.exponentialRampToValueAtTime(
+  .001,
+  audioContext.currentTime+.12
+ );
+
+ osc.connect(gain);
+ gain.connect(audioContext.destination);
+
+ osc.start();
+
+ osc.stop(
+  audioContext.currentTime+.12
+ );
+
+ let delay=
+  time<=10 ? 400 : 1000;
+
+ setTimeout(beep,delay);
+
+}
+
 
 function update(){
 
  if(!active)return;
 
- time-=0.1;
+ time-=.1;
 
  if(time<0)time=0;
 
@@ -340,6 +573,7 @@ function update(){
  }
 
  setTimeout(update,100);
+
 }
 
 
@@ -349,7 +583,7 @@ function press(number){
 
  if(code.length>=4)return;
 
- code+=number;
+ code+=String(number);
 
  updateDisplay();
 
@@ -370,7 +604,8 @@ function updateDisplay(){
 
  }
 
- document.getElementById("display").innerText=display;
+ document.getElementById("display").innerText=
+  display;
 
 }
 
@@ -392,15 +627,7 @@ function checkCode(){
 
  if(code===correctCode){
 
-  active=false;
-
-  document.getElementById("main").style.display="none";
-
-  document.getElementById("disarmed").style.display="block";
-
-  if(navigator.vibrate){
-   navigator.vibrate([100,50,100]);
-  }
+  disarm();
 
  }else{
 
@@ -413,37 +640,270 @@ function checkCode(){
 
   time=Math.max(0,time-3);
 
-  if(navigator.vibrate){
-   navigator.vibrate(200);
-  }
+  shortBeep();
 
  }
 
 }
 
+
+function shortBeep(){
+
+ if(!audioContext)return;
+
+ let osc=
+  audioContext.createOscillator();
+
+ let gain=
+  audioContext.createGain();
+
+ osc.frequency.value=180;
+
+ gain.gain.value=.15;
+
+ osc.connect(gain);
+ gain.connect(audioContext.destination);
+
+ osc.start();
+
+ osc.stop(
+  audioContext.currentTime+.25
+ );
+
+}
+
+
+/* VÍTĚZNÝ KONEC */
+
+function disarm(){
+
+ active=false;
+
+ if(alarmOsc){
+
+  try{
+   alarmOsc.stop();
+  }catch(e){}
+
+ }
+
+ document.getElementById("main").style.display="none";
+ document.getElementById("disarmed").style.display="block";
+
+
+ let green=
+  document.getElementById("greenFlash");
+
+ green.style.opacity=".75";
+
+ setTimeout(function(){
+  green.style.opacity="0";
+ },300);
+
+
+ let scan=
+  document.getElementById("scan");
+
+ scan.style.animation=
+  "scan 1.5s linear";
+
+
+ if(navigator.vibrate){
+
+  navigator.vibrate([
+   100,50,100,50,300,80,500
+  ]);
+
+ }
+
+
+ victoryMusic();
+
+}
+
+
+/* VLASTNÍ METALOVÝ VÍTĚZNÝ RIFF */
+
+function victoryMusic(){
+
+ if(!audioContext)return;
+
+ const riff=[
+  {f:82.41,t:0,d:.28},
+  {f:123.47,t:.28,d:.28},
+  {f:164.81,t:.56,d:.28},
+  {f:123.47,t:.84,d:.28},
+  {f:196.00,t:1.12,d:.35},
+  {f:246.94,t:1.47,d:.8}
+ ];
+
+ riff.forEach(function(note){
+
+  setTimeout(function(){
+
+   let osc=
+    audioContext.createOscillator();
+
+   let gain=
+    audioContext.createGain();
+
+   osc.type="sawtooth";
+
+   osc.frequency.value=note.f;
+
+   gain.gain.setValueAtTime(
+    .001,
+    audioContext.currentTime
+   );
+
+   gain.gain.exponentialRampToValueAtTime(
+    .18,
+    audioContext.currentTime+.025
+   );
+
+   gain.gain.exponentialRampToValueAtTime(
+    .001,
+    audioContext.currentTime+note.d
+   );
+
+   osc.connect(gain);
+   gain.connect(audioContext.destination);
+
+   osc.start();
+
+   osc.stop(
+    audioContext.currentTime+note.d
+   );
+
+  },note.t*1000);
+
+ });
+
+
+ /* DRUHÁ VRSTVA - HARMONIE */
+
+ setTimeout(function(){
+
+  let osc=
+   audioContext.createOscillator();
+
+  let gain=
+   audioContext.createGain();
+
+  osc.type="square";
+
+  osc.frequency.value=246.94;
+
+  gain.gain.setValueAtTime(
+   .001,
+   audioContext.currentTime
+  );
+
+  gain.gain.exponentialRampToValueAtTime(
+   .08,
+   audioContext.currentTime+.05
+  );
+
+  gain.gain.exponentialRampToValueAtTime(
+   .001,
+   audioContext.currentTime+1
+  );
+
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+
+  osc.start();
+
+  osc.stop(
+   audioContext.currentTime+1
+  );
+
+ },1120);
+
+}
+
+
+/* VÝBUCH */
 
 function destroy(){
 
  active=false;
 
- document.getElementById("main").style.display="none";
+ if(alarmOsc){
 
+  try{
+   alarmOsc.stop();
+  }catch(e){}
+
+ }
+
+ document.getElementById("main").style.display="none";
  document.getElementById("destroyed").style.display="block";
 
- document.getElementById("flash").style.opacity="1";
+ let flash=
+  document.getElementById("flash");
+
+ flash.style.opacity="1";
 
  setTimeout(function(){
-  document.getElementById("flash").style.opacity="0";
+  flash.style.opacity="0";
  },180);
 
  if(navigator.vibrate){
-  navigator.vibrate([300,100,300,100,700]);
+
+  navigator.vibrate([
+   300,100,300,100,800
+  ]);
+
  }
+
+ explosionSound();
 
 }
 
 
-update();
+function explosionSound(){
+
+ if(!audioContext)return;
+
+ let osc=
+  audioContext.createOscillator();
+
+ let gain=
+  audioContext.createGain();
+
+ osc.type="sawtooth";
+
+ osc.frequency.setValueAtTime(
+  100,
+  audioContext.currentTime
+ );
+
+ osc.frequency.exponentialRampToValueAtTime(
+  30,
+  audioContext.currentTime+1
+ );
+
+ gain.gain.setValueAtTime(
+  .3,
+  audioContext.currentTime
+ );
+
+ gain.gain.exponentialRampToValueAtTime(
+  .001,
+  audioContext.currentTime+1
+ );
+
+ osc.connect(gain);
+ gain.connect(audioContext.destination);
+
+ osc.start();
+
+ osc.stop(
+  audioContext.currentTime+1
+ );
+
+}
 
 </script>
 
